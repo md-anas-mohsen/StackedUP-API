@@ -28,7 +28,7 @@ const userSchema = mongoose.Schema({
     select: false,
   },
   reAuthenticate: {
-    type: boolean,
+    type: Boolean,
     default: false,
   },
 });
