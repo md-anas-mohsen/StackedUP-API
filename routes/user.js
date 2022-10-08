@@ -1,17 +1,18 @@
 const router = require("express").Router();
 const userService = require("../services/userService");
-// const validator = require("express-joi-validation").createValidator({});
 const userValidatorSchema = require("../validators/userValidatorSchema");
 const SchemaValidator = require("../middlewares/SchemaValidator");
 const { isAuthenticatedUser } = require("../middlewares/auth");
 const validator = new SchemaValidator();
 
-router.get("/", (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "Users route",
-  });
-});
+router.get(
+  "/",
+  isAuthenticatedUser("admin"),
+  validator.query(userValidatorSchema.userListingRequestModel),
+  userService.getUserListing
+);
+
+router.get("/:id", isAuthenticatedUser("admin"), userService.getSingleUser);
 
 router.post(
   "/register",
@@ -37,6 +38,15 @@ router.post(
   validator.body(userValidatorSchema.createUserRequestModel),
   userService.createUser
 );
+
+router.patch(
+  "/:id",
+  isAuthenticatedUser(),
+  validator.body(userValidatorSchema.updateUserUsingAdminPrivilegeRequestModel),
+  userService.updateUser
+);
+
+router.delete("/:id", isAuthenticatedUser("admin"), userService.deleteUser);
 
 router.get("/me", isAuthenticatedUser(), userService.getUserProfile);
 

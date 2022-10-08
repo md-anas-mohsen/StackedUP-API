@@ -31,6 +31,22 @@ const userSchema = mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  deletedAt: {
+    type: Date,
+    default: null,
+  },
+});
+
+userSchema.pre("count", function () {
+  this.where({ deletedAt: null });
+});
+
+userSchema.pre("find", function () {
+  this.where({ deletedAt: null });
+});
+
+userSchema.pre("findOne", function () {
+  this.where({ deletedAt: null });
 });
 
 userSchema.pre("save", async function (next) {
@@ -39,6 +55,13 @@ userSchema.pre("save", async function (next) {
   }
   this.password = await bcrypt.hash(this.password, 10);
 });
+
+userSchema.methods.delete = async function () {
+  if (!this.deletedAt) {
+    this.deletedAt = Date.now();
+    await this.save();
+  }
+};
 
 userSchema.methods.comparePassword = async function (password) {
   return await bcrypt.compare(password, this.password);
@@ -54,6 +77,30 @@ userSchema.methods.getJwtRefreshToken = function () {
   return jwt.sign({ id: this._id }, process.env.JWT_REFRESH_TOKEN_SECRET, {
     expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRES_TIME,
   });
+};
+
+userSchema.statics.searchQuery = function (keyword) {
+  const stringSearchFields = ["name", "email", "role"];
+  const alphaNumericSearchFields = ["_id"];
+
+  let query = {};
+  if (keyword) {
+    query = {
+      $or: [
+        ...stringSearchFields.map((field) => ({
+          [field]: {
+            $regex: keyword,
+            $options: "i",
+          },
+        })),
+        ...alphaNumericSearchFields.map((field) => ({
+          $where: `/.*${keyword}.*/.test(this.${field})`,
+        })),
+      ],
+    };
+  }
+
+  return this.find(query);
 };
 
 module.exports = mongoose.model("User", userSchema);

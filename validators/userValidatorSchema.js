@@ -19,6 +19,20 @@ const userValidatorSchema = {
     email: Joi.string().email().required(),
     role: Joi.string().valid("user", "admin"),
   }),
+  updateUserUsingAdminPrivilegeRequestModel: Joi.object({
+    name: Joi.string().max(25).optional(),
+    password: Joi.string().min(6).optional(),
+    email: Joi.string().lowercase().email().required().optional(),
+    role: Joi.string().valid("user", "admin").optional(),
+    reviews: Joi.array()
+      .items(Joi.object().keys({ url: Joi.string().required }))
+      .required(),
+  }),
+  userListingRequestModel: Joi.object({
+    keyword: Joi.string().allow("").trim().optional(),
+    page: Joi.number().empty("").default(1).optional(),
+    limit: Joi.number().empty("").default(20).max(500).optional(),
+  }),
 };
 
 module.exports = userValidatorSchema;
