@@ -3,13 +3,15 @@ const app = express();
 const cookieParser = require("cookie-parser");
 
 const users = require("./routes/user");
+const product = require("./routes/product")
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use("/api/users", users);
-
+app.use("/api/products", product)
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
