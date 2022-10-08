@@ -29,6 +29,13 @@ exports.isAuthenticatedUser = (roles) => {
       );
       req.user = await User.findById(decoded.id);
 
+      if (req.user.reAuthenticate) {
+        return res.status(401).json({
+          success: false,
+          message: MESSAGES.LOGIN_REQUIRED,
+        });
+      }
+
       if (allowedRoles.length > 0 && !allowedRoles.includes(req.user.role)) {
         return res.status(401).json({
           success: false,
