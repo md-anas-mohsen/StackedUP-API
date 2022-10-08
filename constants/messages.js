@@ -22,6 +22,8 @@ const MESSAGES = {
   PRODUCT_UPDATION_FAILURE: "Product failed to update",
   PRODUCT_DELETION_SUCCESS: "Product deleted successfully",
   PRODUCT_DELETION_FAILURE: "Product failed to delete",
+  SUCCESS: "Success",
+  LOGOUT_SUCCESS: "Logged out successfully",
 };
 
 module.exports = MESSAGES;

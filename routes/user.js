@@ -25,6 +25,7 @@ router.post(
   validator.body(userValidatorSchema.loginUserRequestModel),
   userService.loginUser
 );
+router.delete("/logout", userService.logout);
 
 router.post(
   "/refresh-token",
@@ -47,7 +48,6 @@ router.patch(
 );
 
 router.delete("/:id", isAuthenticatedUser("admin"), userService.deleteUser);
-
 router.get("/me", isAuthenticatedUser(), userService.getUserProfile);
 
 module.exports = router;
