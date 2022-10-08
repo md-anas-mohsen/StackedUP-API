@@ -24,9 +24,6 @@ const userValidatorSchema = {
     password: Joi.string().min(6).optional(),
     email: Joi.string().lowercase().email().required().optional(),
     role: Joi.string().valid("user", "admin").optional(),
-    reviews: Joi.array()
-      .items(Joi.object().keys({ url: Joi.string().required }))
-      .required(),
   }),
   userListingRequestModel: Joi.object({
     keyword: Joi.string().allow("").trim().optional(),
