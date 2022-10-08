@@ -1,5 +1,7 @@
 require("dotenv").config({ path: "./.env" });
 require("./config/database");
+require("./config/redis");
+
 const server = require("./app");
 
 const PORT = process.env.PORT || 3000;
