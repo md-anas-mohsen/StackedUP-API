@@ -12,6 +12,8 @@ router.get(
   userService.getUserListing
 );
 
+router.get("/me", isAuthenticatedUser(), userService.getUserProfile);
+
 router.get("/:id", isAuthenticatedUser("admin"), userService.getSingleUser);
 
 router.post(
@@ -48,6 +50,5 @@ router.patch(
 );
 
 router.delete("/:id", isAuthenticatedUser("admin"), userService.deleteUser);
-router.get("/me", isAuthenticatedUser(), userService.getUserProfile);
 
 module.exports = router;

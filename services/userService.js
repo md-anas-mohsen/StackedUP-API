@@ -240,7 +240,7 @@ const userService = {
     }
   },
   logout: async (req, res) => {
-    res.cookie("token", null, {
+    res.cookie("authorization", null, {
       expires: new Date(Date.now()),
       httpOnly: true,
     });
