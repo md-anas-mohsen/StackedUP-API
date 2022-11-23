@@ -23,5 +23,11 @@ router.delete(
   isAuthenticatedUser("admin"),
   productService.deleteSingleProduct
 );
+router.get(
+  "/",
+  isAuthenticatedUser("admin"),
+  validator.body(productValidatorSchema.productListingRequestModel),
+  productService.getAllProducts
+);
 
 module.exports = router;

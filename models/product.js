@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { ORDER_BY_DIRECTIONS } = require("../constants/common");
 const productSchema = mongoose.Schema({
   name: {
     type: String,
@@ -86,6 +87,68 @@ productSchema.methods.delete = async function () {
     this.deletedAt = Date.now();
     await this.save();
   }
+};
+
+productSchema.statics.searchQuery = function (keyword, queryParams) {
+  const stringSearchFields = ["name"];
+  const alphaNumericSearchFields = ["_id"];
+
+  let query = {};
+  if (keyword) {
+    query = {
+      $or: [
+        ...stringSearchFields.map((field) => ({
+          [field]: {
+            $regex: keyword,
+            $options: "i",
+          },
+        })),
+        ...alphaNumericSearchFields.map((field) => ({
+          $where: `/.*${keyword}.*/.test(this.${field})`,
+        })),
+      ],
+    };
+  }
+
+  if (!!queryParams && queryParams.productId) {
+    query._id = queryParams.productId;
+  }
+
+  if (!!queryParams && queryParams.category) {
+    query.categories = queryParams.category;
+  }
+
+  if (!!queryParams && queryParams.priceGTE) {
+    query.price = { $gte: queryParams.priceGTE };
+  }
+
+  if (!!queryParams && queryParams.priceLTE) {
+    query.price = {
+      ...(!!query.price ? query.price : {}),
+      $lte: queryParams.priceLTE,
+    };
+  }
+
+  let sortableFields = ["price", "stock", "createdAt", "name"];
+
+  let sortOrder = {};
+
+  if (!!queryParams && !!queryParams.orderBy) {
+    let orderBy = queryParams.orderBy;
+    direction = queryParams.direction || ORDER_BY_DIRECTIONS.ASC;
+    sortOrder =
+      sortableFields.includes(orderBy) &&
+      direction === ORDER_BY_DIRECTIONS.DESC &&
+      orderBy
+        ? { [orderBy]: "desc" }
+        : sortableFields.includes(orderBy) &&
+          direction === ORDER_BY_DIRECTIONS.ASC &&
+          orderBy
+        ? { [orderBy]: "asc" }
+        : {};
+  }
+
+  return this.find(query).sort(sortOrder);
 };
 
 module.exports = mongoose.model("Product", productSchema);

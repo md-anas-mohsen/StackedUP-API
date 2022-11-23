@@ -1,7 +1,22 @@
 const Product = require("../models/product");
 const MESSAGES = require("../constants/messages");
+const { applyPagination } = require("../utils/generalHelpers");
 
 const productService = {
+  getAllProducts: async (req, res, next) => {
+    const { keyword } = req.query;
+    const products = await applyPagination(
+      Product.searchQuery(keyword, req.query),
+      req.query
+    );
+    const count = await Product.searchQuery(keyword).count();
+
+    return res.status(200).json({
+      success: true,
+      count,
+      products,
+    });
+  },
   createProduct: async (req, res, next) => {
     const { name, price, description, images, categories, stock } = req.body;
     try {
