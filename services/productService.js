@@ -18,13 +18,37 @@ const productService = {
     });
   },
   createProduct: async (req, res, next) => {
-    const { name, price, description, images, categories, stock } = req.body;
+    const { name, price, description, categories, stock } = req.body;
+    let images = [];
+    if (typeof req.body.images === "string") {
+      images.push(req.body.images);
+    } else {
+      images = req.body.images;
+    }
+
+    if (req.body.images.length <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Please add at least 1 image",
+      });
+    }
+
+    let imageLinks = [];
+    for (let i = 0; i < images.length; i++) {
+      const result = await cloudinary.v2.uploader.upload(images[i], {
+        folder: "products",
+      });
+      imageLinks.push({
+        public_id: result.public_id,
+        url: result.secure_url,
+      });
+    }
     try {
       const product = await Product.create({
         name,
         price,
         description,
-        images,
+        ...(imageLinks.length > 0 && { images: imageLinks }),
         categories,
         stock,
         user: req.user._id,

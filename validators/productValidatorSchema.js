@@ -6,9 +6,7 @@ const productValidatorSchema = {
     name: Joi.string().max(90).required(),
     price: Joi.number().required(),
     description: Joi.string().max(200).required(),
-    images: Joi.array()
-      .items(Joi.object().keys({ url: Joi.string().required() }))
-      .required(),
+    images: Joi.array().items(Joi.string().required()).required(),
     categories: Joi.array().items(Joi.string()).required(),
     stock: Joi.number().required(),
   }),
@@ -16,9 +14,7 @@ const productValidatorSchema = {
     name: Joi.string().max(90).required(),
     price: Joi.number().required(),
     description: Joi.string().max(200).required(),
-    images: Joi.array()
-      .items(Joi.object().keys({ url: Joi.string().required() }))
-      .optional(),
+    images: Joi.array().items(Joi.string().required()).required(),
     categories: Joi.array().items(Joi.string()).required(),
     stock: Joi.number().required(),
   }),

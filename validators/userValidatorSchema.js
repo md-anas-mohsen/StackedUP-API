@@ -5,6 +5,7 @@ const userValidatorSchema = {
     name: Joi.string().max(25).required(),
     password: Joi.string().min(6).required(),
     email: Joi.string().email().required(),
+    avatar: Joi.string().string().optional(),
   }),
   loginUserRequestModel: Joi.object({
     password: Joi.string().required(),

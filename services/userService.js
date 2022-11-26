@@ -2,6 +2,7 @@ const User = require("../models/user");
 const { setAuthToken, verifyRefreshToken } = require("../utils/authToken");
 const MESSAGES = require("../constants/messages");
 const { applyPagination } = require("../utils/generalHelpers");
+const { SERVER_ERROR } = require("../constants/messages");
 
 const userService = {
   getUserListing: async (req, res, next) => {
@@ -16,6 +17,21 @@ const userService = {
     });
   },
   registerUser: async (req, res, next) => {
+    let result;
+    if (req.body.avatar) {
+      try {
+        result = await cloudinary.v2.uploader.upload(req.body.avatar, {
+          folder: "avatars",
+          width: 480,
+          crop: "scale",
+        });
+      } catch (err) {
+        return res.status(500).json({
+          success: false,
+          message: SERVER_ERROR,
+        });
+      }
+    }
     const { name, email, password } = req.body;
 
     const userExists = await User.findOne({
@@ -35,6 +51,10 @@ const userService = {
         name,
         email,
         password,
+        avatar: {
+          public_id: result ? result.public_id : "id",
+          url: result ? result.secure_url : "no avatar",
+        },
       });
     } catch (error) {
       return res.status(500).json({
@@ -167,6 +187,29 @@ const userService = {
 
     if (name) {
       user.name = name;
+    }
+
+    if (req.body.avatar !== "") {
+      try {
+        const image_id = user.avatar.public_id;
+        const res = await cloudinary.v2.uploader.destroy(image_id);
+
+        const result = await cloudinary.v2.uploader.upload(req.body.avatar, {
+          folder: "avatars",
+          width: 480,
+          crop: "scale",
+        });
+
+        user.avatar = {
+          public_id: result.public_id,
+          url: result.secure_url,
+        };
+      } catch (err) {
+        return res.status(500).json({
+          success: false,
+          message: SERVER_ERROR,
+        });
+      }
     }
 
     if (role && currentUser.role === "admin") {
