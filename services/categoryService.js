@@ -92,7 +92,7 @@ const categoryService = {
         (categoryId) => categoryId !== id
       );
       promises.push(
-        Product.findByIdAndUpdate(product.id, {
+        Product.findByIdAndUpdate(product._id, {
           categories,
         })
       );
@@ -100,7 +100,7 @@ const categoryService = {
 
     await Promise.all(promises);
 
-    await Category.findByIdAndDelete(id);
+    await category.delete();
 
     return {
       sucess: false,
