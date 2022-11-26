@@ -26,7 +26,8 @@ const productSchema = mongoose.Schema({
   ],
   categories: [
     {
-      type: String,
+      type: mongoose.SchemaTypes.ObjectId,
+      ref: "Category",
     },
   ],
   stock: {
@@ -71,11 +72,11 @@ const productSchema = mongoose.Schema({
   },
 });
 productSchema.pre("find", function () {
-  this.where({ deletedAt: null });
+  this.populate("categories", "name discount").where({ deletedAt: null });
 });
 
 productSchema.pre("findOne", function () {
-  this.where({ deletedAt: null });
+  this.populate("categories", "name discount").where({ deletedAt: null });
 });
 
 productSchema.pre("save", async function (next) {

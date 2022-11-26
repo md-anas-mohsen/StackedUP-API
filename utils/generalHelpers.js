@@ -11,3 +11,13 @@ exports.applyPagination = (dbQuery, queryString) => {
 
   return dbQuery.skip((page - 1) * limit).limit(limit);
 };
+
+exports.capitalizeEachWord = (sentence) => {
+  const words = sentence.split(" ");
+
+  return words
+    .map((word) => {
+      return word[0].toUpperCase() + word.substring(1);
+    })
+    .join(" ");
+};
