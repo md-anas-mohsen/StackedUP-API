@@ -5,6 +5,7 @@ const cookieParser = require("cookie-parser");
 const users = require("./routes/user");
 const products = require("./routes/product");
 const orders = require("./routes/orders");
+const categories = require("./routes/categories");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -13,6 +14,8 @@ app.use(cookieParser());
 app.use("/api/users", users);
 app.use("/api/products", products);
 app.use("/api/orders", orders);
+app.use("/api/categories", categories);
+
 app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
