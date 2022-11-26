@@ -11,6 +11,24 @@ router.post(
   validator.body(productValidatorSchema.createProductRequestModel),
   productService.createProduct
 );
+router.post(
+  "/:id",
+  isAuthenticatedUser(),
+  validator.body(productValidatorSchema.createProductReviewRequestModel),
+  productService.createProductReview
+);
+router.get(
+  "/reviews",
+  isAuthenticatedUser(),
+  validator.query(productValidatorSchema.getProductReviewsRequestModel),
+  productService.getProductReviews
+);
+router.delete(
+  "/reviews",
+  isAuthenticatedUser(),
+  validator.query(productValidatorSchema.deleteProductReviewRequestModel),
+  productService.deleteProductReview
+);
 router.get("/:id", productService.getSingleProduct);
 router.put(
   "/:id",

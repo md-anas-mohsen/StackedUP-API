@@ -72,11 +72,15 @@ const productSchema = mongoose.Schema({
   },
 });
 productSchema.pre("find", function () {
-  this.populate("categories", "name discount").where({ deletedAt: null });
+  this.populate("reviews.user", "-role -reAuthenticate")
+    .populate("categories", "name discount")
+    .where({ deletedAt: null });
 });
 
 productSchema.pre("findOne", function () {
-  this.populate("categories", "name discount").where({ deletedAt: null });
+  this.populate("reviews.user", "-role -reAuthenticate")
+    .populate("categories", "name discount")
+    .where({ deletedAt: null });
 });
 
 productSchema.pre("save", async function (next) {
