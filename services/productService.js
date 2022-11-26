@@ -121,6 +121,96 @@ const productService = {
       });
     }
   },
+  createProductReview: async (req, res) => {
+    const { rating, comment } = req.body;
+    const review = {
+      user: req.user.id,
+      comment,
+      rating,
+    };
+
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: MESSAGES.PRODUCT_NOT_FOUND,
+      });
+    }
+
+    const isReviewed = product.reviews.find(
+      (review) => review.user.toString() === req.user.id.toString()
+    );
+
+    if (isReviewed) {
+      product.reviews.forEach((review) => {
+        if (review.user.toString() === req.user.id.toString()) {
+          review.comment = comment;
+          review.rating = rating;
+        }
+      });
+    } else {
+      product.reviews.push(review);
+    }
+
+    await Product.findByIdAndUpdate(req.params.id, {
+      reviews: product.reviews,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Review posted",
+    });
+  },
+  getProductReviews: async (req, res) => {
+    const product = await Product.findById(req.query.productId);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: MESSAGES.PRODUCT_NOT_FOUND,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      reviews: product.reviews,
+    });
+  },
+  deleteProductReview: async (req, res) => {
+    const product = await Product.findById(req.query.productId);
+
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: MESSAGES.PRODUCT_NOT_FOUND,
+      });
+    }
+
+    let reviewToDelete = product.reviews.filter(
+      (review) => review._id.toString() === req.query.reviewId.toString()
+    );
+
+    if (reviewToDelete.userId !== req.user._id && req.user.role !== "admin") {
+      return res.status(401).json({
+        success: false,
+        message: "Cannot delete this review",
+      });
+    }
+
+    let reviews = product.reviews.filter(
+      (review) => review._id.toString() !== req.query.reviewId.toString()
+    );
+
+    await Product.findByIdAndUpdate(req.query.productId, {
+      reviews,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Review deleted successfully",
+    });
+  },
 };
 
 module.exports = productService;

@@ -34,6 +34,17 @@ const productValidatorSchema = {
       .valid(ORDER_BY_DIRECTIONS.ASC, ORDER_BY_DIRECTIONS.DESC)
       .optional(),
   }),
+  createProductReviewRequestModel: Joi.object({
+    comment: Joi.string().max(90).required(),
+    rating: Joi.number().min(1).max(5).required(),
+  }),
+  deleteProductReviewRequestModel: Joi.object({
+    productId: Joi.string().required(),
+    reviewId: Joi.string().required(),
+  }),
+  getProductReviewsRequestModel: Joi.object({
+    productId: Joi.string().required(),
+  }),
 };
 
 module.exports = productValidatorSchema;
