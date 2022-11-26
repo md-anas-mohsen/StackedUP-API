@@ -16,6 +16,16 @@ const userSchema = mongoose.Schema({
     unique: true,
     validate: [validator.isEmail, "Please enter valid email address"],
   },
+  avatar: {
+    public_id: {
+      type: String,
+      required: true,
+    },
+    url: {
+      type: String,
+      required: true,
+    },
+  },
   role: {
     type: String,
     enum: ["admin", "user"],
