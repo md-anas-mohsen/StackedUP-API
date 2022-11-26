@@ -1,6 +1,7 @@
 const { SERVER_ERROR } = require("../constants/messages");
 const Carousel = require("../models/carousel");
 const { applyPagination } = require("../utils/generalHelpers");
+const cloudinary = require("cloudinary");
 
 const carouselService = {
   getAllCarouselSlides: async (req, res) => {
