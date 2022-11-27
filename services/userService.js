@@ -51,10 +51,12 @@ const userService = {
         name,
         email,
         password,
-        avatar: {
-          public_id: result ? result.public_id : "id",
-          url: result ? result.secure_url : "no avatar",
-        },
+        ...(!!result && {
+          avatar: {
+            public_id: result.public_id,
+            url: result.secure_url,
+          },
+        }),
       });
     } catch (error) {
       return res.status(500).json({
