@@ -39,6 +39,10 @@ const userSchema = mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  createdAt: {
+    type: Date,
+    default: Date.now(),
+  },
   deletedAt: {
     type: Date,
     default: null,
@@ -87,7 +91,7 @@ userSchema.methods.getJwtRefreshToken = function () {
   });
 };
 
-userSchema.statics.searchQuery = function (keyword) {
+userSchema.statics.searchQuery = function (keyword, queryParams) {
   const stringSearchFields = ["name", "email", "role"];
   const alphaNumericSearchFields = ["_id"];
 
@@ -105,6 +109,12 @@ userSchema.statics.searchQuery = function (keyword) {
           $where: `/.*${keyword}.*/.test(this.${field})`,
         })),
       ],
+    };
+  }
+
+  if (!!queryParams && queryParams.exceptUserWithId) {
+    query._id = {
+      $ne: queryParams.exceptUserWithId,
     };
   }
 

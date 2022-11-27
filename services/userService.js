@@ -7,8 +7,15 @@ const { SERVER_ERROR } = require("../constants/messages");
 const userService = {
   getUserListing: async (req, res, next) => {
     const { keyword } = req.query;
-    const users = await applyPagination(User.searchQuery(keyword), req.query);
-    const count = await User.searchQuery(keyword).count();
+    const users = await applyPagination(
+      User.searchQuery(keyword, {
+        exceptUserWithId: req.user._id,
+      }),
+      req.query
+    );
+    const count = await User.searchQuery(keyword, {
+      exceptUserWithId: req.user._id,
+    }).count();
 
     return res.status(200).json({
       success: true,
