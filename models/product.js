@@ -28,12 +28,10 @@ const productSchema = mongoose.Schema({
       },
     },
   ],
-  categories: [
-    {
-      type: mongoose.SchemaTypes.ObjectId,
-      ref: "Category",
-    },
-  ],
+  categories: {
+    type: mongoose.SchemaTypes.ObjectId,
+    ref: "Category",
+  },
   stock: {
     type: Number,
     required: [true, "Please enter product stock"],

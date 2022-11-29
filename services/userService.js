@@ -275,7 +275,7 @@ const userService = {
     const user = await User.findById(id);
 
     if (!user) {
-      return res.status(200).json({
+      return res.status(404).json({
         success: true,
         message: MESSAGES.USER_NOT_FOUND,
       });

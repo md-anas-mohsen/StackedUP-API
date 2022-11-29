@@ -8,10 +8,6 @@ const categorySchema = mongoose.Schema({
     unique: true,
     maxLength: [50, "Product name must be within the range = 50"],
   },
-  discount: {
-    type: Number,
-    default: 0.0,
-  },
   createdAt: {
     type: Date,
     default: Date.now(),
@@ -62,7 +58,7 @@ categorySchema.statics.searchQuery = function (keyword, queryParams) {
     };
   }
 
-  let sortableFields = ["discount"];
+  let sortableFields = ["createdAt"];
 
   let sortOrder = {};
 
