@@ -1,4 +1,5 @@
 const Joi = require("joi");
+const { ORDER_BY_DIRECTIONS } = require("../constants/common");
 
 const userValidatorSchema = {
   registerUserRequestModel: Joi.object({
@@ -18,7 +19,7 @@ const userValidatorSchema = {
     name: Joi.string().max(25).required(),
     password: Joi.string().min(6).required(),
     email: Joi.string().email().required(),
-    role: Joi.string().valid("user", "admin"),
+    role: Joi.string().valid("user", "admin").required(),
   }),
   updateUserUsingAdminPrivilegeRequestModel: Joi.object({
     name: Joi.string().max(25).optional(),
@@ -30,6 +31,14 @@ const userValidatorSchema = {
     keyword: Joi.string().allow("").trim().optional(),
     page: Joi.number().empty("").default(1).optional(),
     limit: Joi.number().empty("").default(20).max(500).optional(),
+    orderBy: Joi.string()
+      .allow("")
+      .trim()
+      .valid("_id", "role", "createdAt", "email", "name")
+      .optional(),
+    direction: Joi.string()
+      .valid(ORDER_BY_DIRECTIONS.ASC, ORDER_BY_DIRECTIONS.DESC)
+      .optional(),
   }),
 };
 

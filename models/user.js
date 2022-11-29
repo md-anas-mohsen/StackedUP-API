@@ -3,6 +3,7 @@ const validator = require("validator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { boolean } = require("joi");
+const { ORDER_BY_DIRECTIONS } = require("../constants/common");
 
 const userSchema = mongoose.Schema({
   name: {
@@ -118,7 +119,26 @@ userSchema.statics.searchQuery = function (keyword, queryParams) {
     };
   }
 
-  return this.find(query);
+  let sortableFields = ["_id", "role", "createdAt", "email", "name"];
+
+  let sortOrder = {};
+
+  if (!!queryParams && !!queryParams.orderBy) {
+    let orderBy = queryParams.orderBy;
+    direction = queryParams.direction || ORDER_BY_DIRECTIONS.ASC;
+    sortOrder =
+      sortableFields.includes(orderBy) &&
+      direction === ORDER_BY_DIRECTIONS.DESC &&
+      orderBy
+        ? { [orderBy]: "desc" }
+        : sortableFields.includes(orderBy) &&
+          direction === ORDER_BY_DIRECTIONS.ASC &&
+          orderBy
+        ? { [orderBy]: "asc" }
+        : {};
+  }
+
+  return this.find(query).sort(sortOrder);
 };
 
 module.exports = mongoose.model("User", userSchema);

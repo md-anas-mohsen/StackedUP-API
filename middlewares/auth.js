@@ -46,7 +46,7 @@ exports.isAuthenticatedUser = (roles) => {
     } catch (error) {
       return res.status(401).json({
         success: false,
-        message: MESSAGES.INVALID_AUTH_TOKEN,
+        message: MESSAGES.LOGIN_REQUIRED,
       });
     }
   };

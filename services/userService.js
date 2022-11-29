@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const Order = require("../models/order");
 const { setAuthToken, verifyRefreshToken } = require("../utils/authToken");
 const MESSAGES = require("../constants/messages");
 const { applyPagination } = require("../utils/generalHelpers");
@@ -9,6 +10,7 @@ const userService = {
     const { keyword } = req.query;
     const users = await applyPagination(
       User.searchQuery(keyword, {
+        ...req.query,
         exceptUserWithId: req.user._id,
       }),
       req.query
@@ -98,7 +100,7 @@ const userService = {
       await user.save();
 
       if (!passwordIsCorrect) {
-        return res.status(200).json({
+        return res.status(401).json({
           success: false,
           message: MESSAGES.INCORRECT_PASSWORD,
         });
@@ -137,7 +139,7 @@ const userService = {
 
       await setAuthToken(user, 200, req, res);
     } catch (error) {
-      res.status(400).json({
+      res.status(401).json({
         success: false,
         message: MESSAGES.INVALID_REFRESH_TOKEN,
       });
@@ -198,7 +200,7 @@ const userService = {
       user.name = name;
     }
 
-    if (req.body.avatar !== "") {
+    if (!!req.body.avatar && req.body.avatar !== "") {
       try {
         const image_id = user.avatar.public_id;
         const res = await cloudinary.v2.uploader.destroy(image_id);
@@ -231,13 +233,21 @@ const userService = {
     }
 
     if (email) {
+      const emailIsUsed = await User.findOne({ email, _id: { $ne: id } });
+
+      if (!!emailIsUsed) {
+        return res.status(409).json({
+          success: false,
+          message: "Email is already used",
+        });
+      }
+
       user.email = email;
-      user.reAuthenticate = true;
     }
 
     if (password && currentUser.role === "admin") {
       user.password = password;
-      user.reAuthenticate = true;
+      // user.reAuthenticate = true;
     } else if (password && currentUser.role !== "admin") {
       return res.status(403).json({
         success: true,
@@ -245,7 +255,14 @@ const userService = {
       });
     }
 
-    await user.save();
+    try {
+      await user.save();
+    } catch (err) {
+      return res.status(200).json({
+        success: false,
+        message: MESSAGES.SERVER_ERROR,
+      });
+    }
 
     return res.status(200).json({
       success: true,
@@ -264,7 +281,18 @@ const userService = {
       });
     }
 
-    await user.delete();
+    const userOrders = await Order.find({
+      user: id,
+    });
+
+    let promises = [];
+
+    for (let i = 0; i < userOrders.length; i++) {
+      promises.push(userOrders[i].delete());
+    }
+
+    promises.push(user.delete());
+    await Promise.all(promises);
 
     return res.status(200).json({
       success: true,
@@ -283,6 +311,11 @@ const userService = {
           message: MESSAGES.USER_NOT_FOUND,
         });
       }
+
+      return res.status(200).json({
+        success: true,
+        user,
+      });
     } catch (error) {
       console.log(error);
       return res.status(500).json({
