@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { ORDER_BY_DIRECTIONS } = require("../constants/common");
 
 const carouselSchema = mongoose.Schema({
   title: {
@@ -7,11 +8,11 @@ const carouselSchema = mongoose.Schema({
     trim: true,
     maxLength: [20, "title must be within the range = 20"],
   },
-  body: {
+  description: {
     type: String,
-    required: [true, "Please enter carousel slide body"],
+    required: [true, "Please enter carousel slide description"],
     trim: true,
-    maxLength: [100, "body must be within the range = 100"],
+    maxLength: [100, "Description must be within the range = 100"],
   },
   image: {
     public_id: {
@@ -56,7 +57,7 @@ carouselSchema.methods.delete = async function () {
 };
 
 carouselSchema.statics.searchQuery = function (keyword, queryParams) {
-  const stringSearchFields = ["title"];
+  const stringSearchFields = ["title", "description"];
   const alphaNumericSearchFields = ["_id"];
 
   let query = {};
@@ -76,7 +77,26 @@ carouselSchema.statics.searchQuery = function (keyword, queryParams) {
     };
   }
 
-  return this.find(query);
+  let sortableFields = ["_id", "title", "createdAt"];
+
+  let sortOrder = {};
+
+  if (!!queryParams && !!queryParams.orderBy) {
+    let orderBy = queryParams.orderBy;
+    direction = queryParams.direction || ORDER_BY_DIRECTIONS.ASC;
+    sortOrder =
+      sortableFields.includes(orderBy) &&
+      direction === ORDER_BY_DIRECTIONS.DESC &&
+      orderBy
+        ? { [orderBy]: "desc" }
+        : sortableFields.includes(orderBy) &&
+          direction === ORDER_BY_DIRECTIONS.ASC &&
+          orderBy
+        ? { [orderBy]: "asc" }
+        : {};
+  }
+
+  return this.find(query).sort(sortOrder);
 };
 
 module.exports = mongoose.model("Carousel", carouselSchema);
