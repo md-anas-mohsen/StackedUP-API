@@ -1,11 +1,12 @@
 const mongoose = require("mongoose");
+const { ORDER_BY_DIRECTIONS } = require("../constants/common");
 
 const categorySchema = mongoose.Schema({
   name: {
     type: String,
     required: [true, "Please enter category name"],
     trim: true,
-    unique: true,
+    unique: false,
     maxLength: [50, "Product name must be within the range = 50"],
   },
   createdAt: {

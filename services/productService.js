@@ -1,6 +1,7 @@
 const Product = require("../models/product");
 const MESSAGES = require("../constants/messages");
 const { applyPagination } = require("../utils/generalHelpers");
+const cloudinary = require("cloudinary");
 
 const productService = {
   getAllProducts: async (req, res, next) => {
@@ -18,7 +19,7 @@ const productService = {
     });
   },
   createProduct: async (req, res, next) => {
-    const { name, price, description, categories, stock } = req.body;
+    const { name, price, description, category, stock } = req.body;
     let images = [];
     if (typeof req.body.images === "string") {
       images.push(req.body.images);
@@ -49,7 +50,7 @@ const productService = {
         price,
         description,
         ...(imageLinks.length > 0 && { images: imageLinks }),
-        categories,
+        category,
         stock,
         user: req.user._id,
       });
@@ -90,7 +91,7 @@ const productService = {
   },
   updateSingleProduct: async (req, res, next) => {
     const { id } = req.params;
-    const { name, price, description, images, categories, stock } = req.body;
+    const { name, price, description, category, stock } = req.body;
     try {
       const product = await Product.findById(id);
       if (!product) {
@@ -103,11 +104,36 @@ const productService = {
       product.name = name;
       product.price = price;
       product.description = description;
-      if (images) {
-        product.images = images;
-        //TO DO: FILE UPLOAD DELETE OLD IMAGES
+
+      let images = [];
+      if (typeof req.body.images === "string") {
+        images.push(req.body.images);
+      } else {
+        images = req.body.images;
       }
-      product.categories = categories;
+
+      let imageLinks = [];
+      if (!!images) {
+        for (let i = 0; i < product.images.length; i++) {
+          const result = await cloudinary.v2.uploader.destroy(
+            product.images[i].public_id
+          );
+        }
+        let imageLinks = [];
+        for (let i = 0; i < images.length; i++) {
+          const result = await cloudinary.v2.uploader.upload(images[i], {
+            folder: "products",
+          });
+          imageLinks.push({
+            public_id: result.public_id,
+            url: result.secure_url,
+          });
+
+          product.images = imageLinks;
+        }
+      }
+
+      product.category = category;
       product.stock = stock;
       await product.save();
       return res.status(200).json({

@@ -9,7 +9,7 @@ const {
 
 const categoryService = {
   createCategory: async (req, res) => {
-    const { name: nameInput, discount } = req.body;
+    const { name: nameInput } = req.body;
 
     const name = capitalizeEachWord(nameInput);
 
@@ -29,9 +29,10 @@ const categoryService = {
     try {
       const category = await Category.create({
         name,
-        discount,
       });
     } catch (err) {
+      console.log(err);
+
       return res.status(500).json({
         success: false,
         message: SERVER_ERROR,
@@ -39,7 +40,7 @@ const categoryService = {
     }
 
     return res.status(201).json({
-      success: false,
+      success: true,
       message: "Category created succesfully",
     });
   },
@@ -80,32 +81,21 @@ const categoryService = {
       });
     }
 
-    const products = await Product.find({
-      categories: id,
-    });
-
-    let promises = [];
-
-    for (let i = 0; i < products.length; i++) {
-      let product = products[i];
-      let categories = product.categories.filter(
-        (categoryId) => categoryId !== id
-      );
-      promises.push(
-        Product.findByIdAndUpdate(product._id, {
-          categories,
-        })
-      );
-    }
-
-    await Promise.all(promises);
+    const products = await Product.updateMany(
+      {
+        category: id,
+      },
+      {
+        category: null,
+      }
+    );
 
     await category.delete();
 
-    return {
-      sucess: false,
+    return res.status(200).json({
+      success: true,
       message: "Category deleted successfully",
-    };
+    });
   },
   getSingleCategory: async (req, res) => {
     const { id } = req.params;
@@ -120,14 +110,9 @@ const categoryService = {
         });
       }
 
-      const products = await Product.find({
-        categories: id,
-      });
-
       return res.status(200).json({
         success: true,
         category,
-        products,
       });
     } catch (err) {
       return res.status(500).json({
