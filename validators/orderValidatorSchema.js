@@ -7,17 +7,16 @@ const orderValidatorSchema = {
       .keys({
         address: Joi.string().required(),
         city: Joi.string().required(),
-        phoneNumber: Joi.string().required(),
+        phoneNo: Joi.string().required(),
         postalCode: Joi.string().required(),
         province: Joi.string().required(),
         country: Joi.string().required(),
       })
       .required(),
-    user: Joi.string().required(),
     orderItems: Joi.array().items(
       Joi.object().keys({
         quantity: Joi.number().required(),
-        productID: Joi.string().required(),
+        product: Joi.string().required(),
       })
     ),
   }),

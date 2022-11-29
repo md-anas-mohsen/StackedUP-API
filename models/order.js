@@ -44,7 +44,7 @@ const orderSchema = mongoose.Schema({
         type: Number,
         required: true,
       },
-      productID: {
+      product: {
         type: mongoose.SchemaTypes.ObjectId,
         required: true,
         ref: "Product",
@@ -107,15 +107,21 @@ const orderSchema = mongoose.Schema({
 });
 
 orderSchema.pre("count", function () {
-  this.where({ deletedAt: null });
+  this.populate("user")
+    .populate("orderItems.product")
+    .where({ deletedAt: null });
 });
 
 orderSchema.pre("find", function () {
-  this.where({ deletedAt: null });
+  this.populate("user")
+    .populate("orderItems.product")
+    .where({ deletedAt: null });
 });
 
 orderSchema.pre("findOne", function () {
-  this.where({ deletedAt: null });
+  this.populate("user")
+    .populate("orderItems.product")
+    .where({ deletedAt: null });
 });
 
 orderSchema.methods.delete = async function () {

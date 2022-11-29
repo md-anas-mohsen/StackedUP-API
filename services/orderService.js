@@ -19,7 +19,7 @@ const orderService = {
 
     for (let i = 0; i < orderItems.length; i++) {
       let item = orderItems[i];
-      const productExists = await Product.findById(item.productID);
+      const productExists = await Product.findById(item.product);
 
       if (!productExists) {
         return res.status(404).json({
@@ -39,23 +39,30 @@ const orderService = {
     const taxPrice = 10;
     const totalPrice = itemsPrice + shippingPrice + taxPrice;
 
-    const order = await Order.create({
-      orderItems,
-      shippingInfo,
-      itemsPrice,
-      taxPrice,
-      shippingPrice,
-      totalPrice,
-      paymentInfo,
-      paidAt: Date.now(),
-      user: req.user.id,
-    });
+    try {
+      const order = await Order.create({
+        orderItems,
+        shippingInfo,
+        itemsPrice,
+        taxPrice,
+        shippingPrice,
+        totalPrice,
+        paymentInfo,
+        paidAt: Date.now(),
+        user: req.user.id,
+      });
 
-    res.status(200).json({
-      success: true,
-      order,
-      message: ORDER_CREATION_SUCCESS,
-    });
+      res.status(200).json({
+        success: true,
+        order,
+        message: ORDER_CREATION_SUCCESS,
+      });
+    } catch (err) {
+      res.status(500).json({
+        success: true,
+        message: SERVER_ERROR,
+      });
+    }
   },
   getSingleOrder: async (req, res) => {
     const order = await Order.findById(req.params.id).populate(
