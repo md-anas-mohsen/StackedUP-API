@@ -131,18 +131,19 @@ orderSchema.methods.delete = async function () {
   }
 };
 
-orderSchema.statics.searchQuery = function (
-  keyword,
-  orderBy,
-  direction,
-  whereParams
-) {
-  // const stringSearchFields = ["name", "email", "role"];
+orderSchema.statics.searchQuery = function (keyword, queryParams) {
+  const stringSearchFields = ["orderStatus"];
   const alphaNumericSearchFields = ["_id"];
 
   let query = {};
   if (keyword) {
     query = {
+      ...stringSearchFields.map((field) => ({
+        [field]: {
+          $regex: keyword,
+          $options: "i",
+        },
+      })),
       $or: [
         ...alphaNumericSearchFields.map((field) => ({
           $where: `/.*${keyword}.*/.test(this.${field})`,
@@ -151,16 +152,28 @@ orderSchema.statics.searchQuery = function (
     };
   }
 
-  if (!!whereParams && whereParams.userId) {
-    query.user = whereParams.userId;
+  if (!!queryParams && queryParams.userId) {
+    query.user = queryParams.userId;
   }
 
-  let sortOrder =
-    direction === ORDER_BY_DIRECTIONS.DESC && orderBy
-      ? { [orderBy]: "desc" }
-      : direction === ORDER_BY_DIRECTIONS.ASC && orderBy
-      ? { [orderBy]: "asc" }
-      : {};
+  let sortableFields = ["totalPrice", "_id", "createdAt", "orderStatus"];
+
+  let sortOrder = {};
+
+  if (!!queryParams && !!queryParams.orderBy) {
+    let orderBy = queryParams.orderBy;
+    direction = queryParams.direction || ORDER_BY_DIRECTIONS.ASC;
+    sortOrder =
+      sortableFields.includes(orderBy) &&
+      direction === ORDER_BY_DIRECTIONS.DESC &&
+      orderBy
+        ? { [orderBy]: "desc" }
+        : sortableFields.includes(orderBy) &&
+          direction === ORDER_BY_DIRECTIONS.ASC &&
+          orderBy
+        ? { [orderBy]: "asc" }
+        : {};
+  }
 
   return this.find(query).sort(sortOrder);
 };

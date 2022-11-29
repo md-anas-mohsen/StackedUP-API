@@ -123,12 +123,13 @@ const orderService = {
     if (order.orderStatus === ORDER_STATUS.IN_TRANSIT) {
       let promises = [];
       order.orderItems.forEach((item) => {
-        promises.push(updateStock(item.productID, item.quantity));
+        promises.push(updateStock(item.product, item.quantity));
       });
 
       try {
         await Promise.all(promises);
       } catch (error) {
+        console.log(error);
         return res.status(500).json({
           success: false,
           message: SERVER_ERROR,
@@ -154,10 +155,14 @@ const orderService = {
       });
     }
 
-    if (order.orderStatus !== ORDER_STATUS.DELIVERED) {
+    if (
+      ![ORDER_STATUS.DELIVERED, ORDER_STATUS.CANCELLED].includes(
+        order.orderStatus
+      )
+    ) {
       return res.status(400).json({
         success: false,
-        message: "Only delivered orders may be deleted",
+        message: "Only delivered or cancelled orders may be deleted",
       });
     }
 
@@ -168,23 +173,37 @@ const orderService = {
     });
   },
   getOrderListing: async (req, res) => {
-    const { keyword, orderBy, direction } = req.query;
+    const { keyword } = req.query;
     const orders = await applyPagination(
-      Order.searchQuery(keyword, orderBy, direction),
+      Order.searchQuery(keyword, req.query),
       req.query
     );
     const count = await Order.searchQuery(keyword).count();
+    const totalAmount = (
+      await Order.aggregate([
+        { $match: { deletedAt: null } },
+        {
+          $group: {
+            _id: null,
+            totalAmount: {
+              $sum: { $cond: [{ $ne: ["$paidAt", null] }, "$totalPrice", 0] },
+            },
+          },
+        },
+      ])
+    )[0].totalAmount;
 
     return res.status(200).json({
       success: true,
       count,
       orders,
+      totalAmount,
     });
   },
   myOrderListing: async (req, res) => {
     const { keyword, orderBy, direction } = req.query;
     const orders = await applyPagination(
-      Order.searchQuery(keyword, orderBy, direction, { userId: req.user._id }),
+      Order.searchQuery(keyword, { ...req.query, userId: req.user._id }),
       req.query
     );
     const count = await Order.searchQuery(keyword).count();
