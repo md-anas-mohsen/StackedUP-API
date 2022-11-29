@@ -1,12 +1,13 @@
 const Joi = require("joi");
 const { ORDER_BY_DIRECTIONS } = require("../constants/common");
+//    images: Joi.array().items(Joi.string().required()).required(),
 
 const productValidatorSchema = {
   createProductRequestModel: Joi.object({
     name: Joi.string().max(90).required(),
     price: Joi.number().required(),
     description: Joi.string().max(200).required(),
-    images: Joi.array().items(Joi.string().required()).required(),
+    images: Joi.required(),
     category: Joi.string().required(),
     stock: Joi.number().required(),
   }),
@@ -14,7 +15,7 @@ const productValidatorSchema = {
     name: Joi.string().max(90).required(),
     price: Joi.number().required(),
     description: Joi.string().max(200).required(),
-    images: Joi.array().items(Joi.string().required()).required(),
+    images: Joi.optional(),
     category: Joi.string().required(),
     stock: Joi.number().required(),
   }),

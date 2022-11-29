@@ -73,15 +73,26 @@ const productSchema = mongoose.Schema({
     ref: "User",
   },
 });
+
+productSchema.virtual("ratings").get(function () {
+  return this.reviews.length
+    ? this.reviews.reduce((total, next) => total + next.rating, 0) /
+        this.reviews.length
+    : 0;
+});
+
+productSchema.set("toObject", { virtuals: true });
+productSchema.set("toJSON", { virtuals: true });
+
 productSchema.pre("find", function () {
   this.populate("reviews.user", "-role -reAuthenticate")
-    .populate("categories", "name discount")
+    .populate("category", "name")
     .where({ deletedAt: null });
 });
 
 productSchema.pre("findOne", function () {
   this.populate("reviews.user", "-role -reAuthenticate")
-    .populate("categories", "name discount")
+    .populate("category", "name")
     .where({ deletedAt: null });
 });
 
@@ -101,7 +112,7 @@ productSchema.statics.searchQuery = function (keyword, queryParams) {
   const alphaNumericSearchFields = ["_id"];
 
   let query = {};
-  if (keyword) {
+  if (!!keyword) {
     query = {
       $or: [
         ...stringSearchFields.map((field) => ({
@@ -122,7 +133,7 @@ productSchema.statics.searchQuery = function (keyword, queryParams) {
   }
 
   if (!!queryParams && queryParams.category) {
-    query.categories = queryParams.category;
+    query.category = queryParams.category;
   }
 
   if (!!queryParams && queryParams.priceGTE) {

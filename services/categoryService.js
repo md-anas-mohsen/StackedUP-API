@@ -137,7 +137,7 @@ const categoryService = {
     });
   },
   getAllCategories: async (req, res) => {
-    const categories = await Category.find();
+    const categories = await Category.find().select("name createdAt");
 
     return res.status(200).json({
       success: true,

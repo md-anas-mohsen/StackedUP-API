@@ -10,7 +10,7 @@ const productService = {
       Product.searchQuery(keyword, req.query),
       req.query
     );
-    const count = await Product.searchQuery(keyword).count();
+    const count = await Product.searchQuery(keyword, req.query).count();
 
     return res.status(200).json({
       success: true,
@@ -62,7 +62,7 @@ const productService = {
       });
     }
 
-    return res.status(200).json({
+    return res.status(201).json({
       success: true,
       message: MESSAGES.PRODUCT_CREATION_SUCCESS,
     });
@@ -100,7 +100,6 @@ const productService = {
           message: MESSAGES.PRODUCT_NOT_FOUND,
         });
       }
-      console.log("here");
       product.name = name;
       product.price = price;
       product.description = description;
