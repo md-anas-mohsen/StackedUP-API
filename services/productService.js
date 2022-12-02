@@ -6,11 +6,25 @@ const cloudinary = require("cloudinary");
 const productService = {
   getAllProducts: async (req, res, next) => {
     const { keyword } = req.query;
-    const products = await applyPagination(
-      Product.searchQuery(keyword, req.query),
-      req.query
-    );
-    const count = await Product.searchQuery(keyword, req.query).count();
+    let products = [];
+    let count;
+
+    if (req.query.ratings) {
+      products = await Product.searchQuery(keyword, req.query);
+
+      products = products.filter(
+        (product) => product.ratings >= req.query.ratings
+      );
+      count = products.length;
+
+      products = products.slice((req.query.page - 1) * 20, req.query.page * 20);
+    } else {
+      products = await applyPagination(
+        Product.searchQuery(keyword, req.query),
+        req.query
+      );
+      count = await Product.searchQuery(keyword, req.query).count();
+    }
 
     return res.status(200).json({
       success: true,

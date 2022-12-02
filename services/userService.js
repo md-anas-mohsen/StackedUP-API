@@ -4,6 +4,7 @@ const { setAuthToken, verifyRefreshToken } = require("../utils/authToken");
 const MESSAGES = require("../constants/messages");
 const { applyPagination } = require("../utils/generalHelpers");
 const { SERVER_ERROR } = require("../constants/messages");
+const cloudinary = require("cloudinary");
 
 const userService = {
   getUserListing: async (req, res, next) => {
@@ -35,6 +36,7 @@ const userService = {
           crop: "scale",
         });
       } catch (err) {
+        console.log(err);
         return res.status(500).json({
           success: false,
           message: SERVER_ERROR,
@@ -68,6 +70,7 @@ const userService = {
         }),
       });
     } catch (error) {
+      console.log(error);
       return res.status(500).json({
         success: false,
         error,
@@ -85,6 +88,13 @@ const userService = {
       user = await User.findOne({
         email,
       }).select("+password");
+
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: "Invalid credentials",
+        });
+      }
     } catch (error) {
       return res.status(500).json({
         success: false,

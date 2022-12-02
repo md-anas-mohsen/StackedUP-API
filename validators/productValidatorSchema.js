@@ -25,6 +25,7 @@ const productValidatorSchema = {
     limit: Joi.number().empty("").default(20).max(500).optional(),
     priceGTE: Joi.number().empty("").default(1).optional(),
     priceLTE: Joi.number().empty("").default(1).optional(),
+    rating: Joi.number().empty("").default(1).optional(),
     category: Joi.string().allow("").trim().optional(),
     orderBy: Joi.string().allow("").trim().optional(),
     direction: Joi.string()

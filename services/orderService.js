@@ -179,19 +179,19 @@ const orderService = {
       req.query
     );
     const count = await Order.searchQuery(keyword).count();
-    const totalAmount = (
-      await Order.aggregate([
-        { $match: { deletedAt: null } },
-        {
-          $group: {
-            _id: null,
-            totalAmount: {
-              $sum: { $cond: [{ $ne: ["$paidAt", null] }, "$totalPrice", 0] },
-            },
+    let totalAmount = await Order.aggregate([
+      { $match: { deletedAt: null } },
+      {
+        $group: {
+          _id: null,
+          totalAmount: {
+            $sum: { $cond: [{ $ne: ["$paidAt", null] }, "$totalPrice", 0] },
           },
         },
-      ])
-    )[0].totalAmount;
+      },
+    ]);
+
+    totalAmount = totalAmount ? totalAmount[0]?.totalAmount : 0;
 
     return res.status(200).json({
       success: true,

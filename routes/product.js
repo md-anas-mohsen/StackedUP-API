@@ -43,7 +43,6 @@ router.delete(
 );
 router.get(
   "/",
-  isAuthenticatedUser("admin"),
   validator.body(productValidatorSchema.productListingRequestModel),
   productService.getAllProducts
 );
